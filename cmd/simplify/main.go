@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"path"
 
 	"github.com/fogleman/simplify"
 )
@@ -22,10 +23,24 @@ func main() {
 		return
 	}
 	fmt.Printf("Loading %s\n", args[0])
-	mesh, err := simplify.LoadBinarySTL(args[0])
+
+	ext := path.Ext(args[0])
+	var mesh *simplify.Mesh
+	var err error
+	if ext == ".stl" {
+		mesh, err = simplify.LoadBinarySTL(args[0])
+	} else if ext == ".obj" {
+		mesh, err = simplify.LoadOBJ(args[0])
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if mesh == nil {
+		log.Fatalf("Unsupported filetype: %s\n", ext)
+	}
+
 	fmt.Printf("Input mesh contains %d faces\n", len(mesh.Triangles))
 	fmt.Printf("Simplifying to %d%% of original...\n", int(factor*100))
 	mesh = mesh.Simplify(factor)
